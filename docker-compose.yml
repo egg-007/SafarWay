@@ -1,0 +1,23 @@
+services:
+  api:
+    build: .
+    container_name: strada-api
+    ports:
+      - "${PORT}:${PORT}"
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:7
+    container_name: strada-mongodb
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
