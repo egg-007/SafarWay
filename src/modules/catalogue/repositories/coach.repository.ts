@@ -1,32 +1,26 @@
+import type { HydratedDocument } from "mongoose";
+import { BaseRepository } from "../../../shared/base.repository.js";
 import { CoachModel, type ICoach } from "../models/coach.model.js";
 
-export class CoachRepository {
-    async create(data: { registration: string; seatNumbers: number[] }): Promise<ICoach> {
-        return await CoachModel.create(data);
-    }
+export class CoachRepository extends BaseRepository<ICoach> {
+  constructor() {
+    super(CoachModel);
+  }
 
-    async findById(id: string): Promise<ICoach | null> {
-        return await CoachModel.findById(id);
-    }
+  async findByRegistration(registration: string): Promise<HydratedDocument<ICoach> | null> {
+    return this.model.findOne({ registration }).exec();
+  }
 
-    async findByRegistration(registration: string): Promise<ICoach | null> {
-        return await CoachModel.findOne({ registration });
-    }
+  async findAllActive(page: number = 1, limit: number = 20): Promise<{ coaches: HydratedDocument<ICoach>[]; total: number }> {
+    const skip = (page - 1) * limit;
+    const [coaches, total] = await Promise.all([
+      this.model.find({ isArchived: false }).skip(skip).limit(limit).exec(),
+      this.model.countDocuments({ isArchived: false }).exec(),
+    ]);
+    return { coaches, total };
+  }
 
-    async findAllActive(page: number = 1, limit: number = 20): Promise<{ coaches: ICoach[]; total: number }> {
-        const skip = (page - 1) * limit;
-        const [coaches, total] = await Promise.all([
-            CoachModel.find({ isArchived: false }).skip(skip).limit(limit),
-            CoachModel.countDocuments({ isArchived: false }),
-        ]);
-        return { coaches, total };
-    }
-
-    async update(id: string, data: Partial<ICoach>): Promise<ICoach | null> {
-        return await CoachModel.findByIdAndUpdate(id, data, { new: true });
-    }
-
-    async archive(id: string): Promise<ICoach | null> {
-        return await CoachModel.findByIdAndUpdate(id, { isArchived: true }, { new: true });
-    }
+  async archive(id: string): Promise<HydratedDocument<ICoach> | null> {
+    return this.updateById(id, { isArchived: true });
+  }
 }
