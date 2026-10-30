@@ -18,7 +18,7 @@ const userSchema = new Schema<Iuser>(
     role: {
       type: String,
       enum: Object.values(Role),
-      default: Role.CLIENT,
+      default: Role.PASSENGER,
     },
     email: {
       type: String,

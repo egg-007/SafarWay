@@ -5,7 +5,7 @@ export class UserRepository  extends BaseRepository<Iuser> {
 constructor(){
     super(User)
 }
-async findByEmmail(email:string){
+async findByEmail(email:string){
     return  User.findOne({email});   
 }
 }
